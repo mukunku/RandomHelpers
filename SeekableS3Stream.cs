@@ -25,7 +25,7 @@ namespace mukunku.RandomHelpers
         private long position = 0;
         private Stopwatch seekingStopWatch = new Stopwatch();
 
-        public override bool CanRead => this.latestGetObjectResponse?.ResponseStream.CanRead == true;
+        public override bool CanRead => this.latestGetObjectResponse?.ResponseStream?.CanRead == true;
 
         public override bool CanSeek => true;
 
@@ -36,6 +36,8 @@ namespace mukunku.RandomHelpers
         public override long Position { get => this.position; set => this.Seek(value, SeekOrigin.Begin); }
 
         public TimeSpan TimeWastedSeeking { get => this.seekingStopWatch.Elapsed; }
+
+        public long SeekCount { get; private set; }
 
         public static Task<Stream> OpenFileAsync(IAmazonS3 s3Client, string bucketName, string keyName, bool leaveClientOpen)
         {
@@ -121,6 +123,8 @@ namespace mukunku.RandomHelpers
 
         public override long Seek(long offset, SeekOrigin origin)
         {
+            this.SeekCount++;
+
             long newStreamPos;
             switch(origin)
             {
@@ -139,6 +143,8 @@ namespace mukunku.RandomHelpers
 
             if (newStreamPos == this.position)
                 return this.position;
+
+            this.latestGetObjectResponse?.Dispose();
 
             GetObjectRequest request = new GetObjectRequest
             {
