@@ -33,9 +33,9 @@ namespace mukunku.RandomHelpers
 
         public override long Length => fullFileSize;
 
-        public override long Position { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public override long Position { get => this.position; set => this.Seek(value, SeekOrigin.Begin); }
 
-        public TimeSpan TimeWastedSeeking { get { return this.seekingStopWatch.Elapsed; } }
+        public TimeSpan TimeWastedSeeking { get => this.seekingStopWatch.Elapsed; }
 
         public static Task<Stream> OpenFileAsync(IAmazonS3 s3Client, string bucketName, string keyName, bool leaveClientOpen)
         {
@@ -140,7 +140,6 @@ namespace mukunku.RandomHelpers
             if (newStreamPos == this.position)
                 return this.position;
 
-            this.seekingStopWatch.Start();
             GetObjectRequest request = new GetObjectRequest
             {
                 BucketName = this.bucketName,
@@ -149,9 +148,11 @@ namespace mukunku.RandomHelpers
             };
 
             //No way to do an async Seek unfortunately
+            this.seekingStopWatch.Start();
             this.latestGetObjectResponse = this.s3Client.GetObject(request);
             this.seekingStopWatch.Stop();
 
+            this.position = newStreamPos;
             return newStreamPos;
         }       
 
