@@ -12,6 +12,15 @@ namespace mukunku.RandomHelpers
     /// Provides a way to create a read-only seekable s3 stream using the AWS S3 SDK.
     /// To simulate actual seeking new GetObjectRequest's will be issued for each Seek().
     /// Utilize the "TimeWastedSeeking" property to gauge the performance impact for your use-case.
+    ///
+    ///Sample Usage:
+    ///using (var client = new AmazonS3Client(credentials, Amazon.RegionEndpoint.USEast1))
+    ///{
+    ///    using (var stream = SeekableS3Stream.OpenFile(client, "myBucket", "path/to/myfile.txt", true))
+    ///    {
+    ///        //stream is seekable!
+    ///    }
+    ///}
     /// </summary>
     public class SeekableS3Stream : Stream
     {
